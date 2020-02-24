@@ -1,8 +1,10 @@
 from bs4 import BeautifulSoup
+from per import perCalculation, showHistoryTable
+from asset import assetCalculation
 import requests
 
-stockCode = 'myor'
-quartal = 4
+stockCode = 'pwon'
+quartal = 3
 websiterUrl = requests.get(
     "https://www.indopremier.com/module/saham/include/fundamental.php?code="+stockCode+"&quarter="+str(quartal)).text
 print("https://www.indopremier.com/module/saham/include/fundamental.php?code="+stockCode+"&quarter="+str(quartal))
@@ -41,6 +43,7 @@ epsNow = 0
 perNow = 0
 averagePer = 0
 averagePbv = 0
+averageRoe = 0
 bvpsNow = 0
 lastPrice = 0
 der = 0
@@ -48,41 +51,24 @@ roe = 0
 
 perArr = []
 pbvArr = []
+roeArr = []
+score = 0
+scoreBlueChip = 0
+
+dateKuartal = []
+
 
 
 while index < len(table):
+    if table[index][0] == 'akun':
+        dateKuartal = table[index]
+    if table[index][0] == 'Total Asset':
+        print('===================== Asset ========================')
+        assetCalculation(table, dateKuartal, quartal, index)
     if table[index][0] == 'PER':
         print('===================== PER ========================')
-        
-        totalPer = 0
-        for i, row in enumerate(table[index]):
-            if quartal > 3:
-                if i != 0 and i != 2:
-                    perInt = row.replace(' x', '')
-                    if i == 1:
-                        perNow = float(perInt)
-                    totalPer = totalPer + float(perInt)
-                    perArr.append(float(perInt))
-            else:
-                if i > 1:
-                    perInt = row.replace(' x', '')
-                    if i == 2:
-                        perNow = float(perInt)
-                    totalPer = totalPer + float(perInt)
-                    perArr.append(float(perInt))
-
-        
-        averagePer = totalPer/(len(table[index])-2)
-        marginPer = ((averagePer - perNow)/averagePer) * 100
-
-        print('PER saat ini :', round(perNow,2))
-        print('PER rata rata :', round(averagePer,2))
-        print('Margin PER :', round(marginPer,2), '%')
-        if float(perNow) > averagePer:
-            print('PER diatas rata rata')
-        else:
-            print('PER dibawah rata rata')
-
+        showHistoryTable(table, dateKuartal, quartal, index)
+        perArr, perNow, totalPer = perCalculation(table,dateKuartal,quartal, index)      
     if table[index][0] == 'PBV':
         print('')
         print('===================== PBV ========================')
@@ -112,6 +98,8 @@ while index < len(table):
         if float(pbvNow) > averagePbv:
             print('PBV diatas rata rata')
         else:
+            score +=1
+            scoreBlueChip +=1
             print('PBV dibawah rata rata')
 
     if table[index][0] == 'EPS':
@@ -170,17 +158,29 @@ while index < len(table):
                         der = float(derInt)
     
     if table[index][0] == 'ROE':
+        totalRoe = 0
         for i, row in enumerate(table[index]):
             if quartal > 3:
                 if i != 0 and i != 2:
                     roeStr = row.replace(',', '')
+                    roeStr = row.replace('%', '')
                     if i == 1:
                         roe = roeStr
+                    totalRoe = totalRoe + float(roeStr)
+                    roeArr.append(float(roeStr))
             else:
                 if i > 1:
                     roeStr = row.replace(',', '')
+                    roeStr = row.replace('%', '')
                     if i == 2:
                         roe = roeStr
+
+                    totalRoe = totalRoe + float(roeStr)
+                    roeArr.append(float(roeStr))
+
+            averageRoe = totalRoe/(len(table[index])-2)
+            #marginPer = ((averagePer - perNow)/averagePer) * 100
+
 
     index += 1
 print('')
@@ -189,11 +189,40 @@ print('===================== Info ======================')
 print('Stock Code:', stockCode)
 print('Harga Saat ini :', round(lastPrice, 2))
 print('ROE :', roe)
+print('Average Roe:', round(averageRoe,2))
+
+initialReturn = (epsNow/lastPrice)*100
+if initialReturn > 7.5 :
+    score +=1
+    print('Initial Return:', round(initialReturn,2), "Diatas Rata rata")
+else:
+    print('Initial Return:', round(initialReturn,2), "Dibawah Rata")
+
+
 statusDer = ''
 if der > 1:
     statusDer = ' Hutang diatas rata rata'
 else:
+    scoreBlueChip +=1
+    score +=1
     statusDer = ' Hutang dibawah rata rata'
+
+if float(roe) > 10:
+    score +=1
+    scoreBlueChip +=1
+
+if float(averageRoe) > 10:
+    score +=1
+    scoreBlueChip +=1
+
+if float(perNow) < 15:
+    score +=1
+
+if float(pbvNow) < 1:
+    score +=1
+
+if float(pbvNow) < 2.2:
+    scoreBlueChip += 1
 
 print('DER:', der, statusDer)
 
@@ -211,6 +240,9 @@ print('Harga Wajar Average :', round(averagePrice, 2))
 
 marginPrice = ((averagePrice - lastPrice)/averagePrice) * 100
 print('Margin Of Safety Average :', round(marginPrice, 2), '%')
+
+if float(marginPrice) > 15:
+    score +=1
 
 print('')
 print('===================== PRICE RANGE ======================')
@@ -238,7 +270,25 @@ print('Harga Wajar Range :', round(averagePriceRange, 2))
 marginPrice = ((averagePriceRange - lastPrice)/averagePriceRange) * 100
 print('Margin Of Safety Range :', round(marginPrice, 2), '%')
 
+if float(marginPrice) > 15:
+    score +=1
+
 print('')
+
+print('===================== Benjamin Graham Price ======================')
+##average down
+
+hargaWajarBenjamin = epsNow * (8.5 + ((2*10))) * ((5.25/100)/(7.5/100)) 
+print('Harga Wajar Graham ', ':', round(hargaWajarBenjamin, 2))
+marginPriceGraham = ((hargaWajarBenjamin - lastPrice)/hargaWajarBenjamin) * 100
+print('Margin Of Safety Range :', round(marginPriceGraham, 2), '%')
+
+if marginPriceGraham > 15:
+    scoreBlueChip += 1
+    score += 1
+
+print('')
+
 print('===================== PRICE RANGE ======================')
 print('Best Buy PER :', round(fairPriceByPERTerkecil, 2), ' PER terkecil 6 tahun terakhir')
 print('Best Buy PBV :', round(fairPriceByPBVTerkecil, 2), ' PVB terkecil 6 tahun terakhir')
@@ -260,7 +310,6 @@ while (count < 6):
     count = count + 1
 
 print('')
-
 print('===================== AVERAGE DOWN RATA2 ======================')
 
 ##average down
@@ -272,7 +321,6 @@ while (count < 6):
     count = count + 1
 
 print('')
-
 print('===================== AVERAGE UP RANGE ======================')
 
 ##average UP
@@ -282,7 +330,6 @@ print('Avareage Up ', ':', round(averageUpRange, 2))
 
 
 print('')
-
 print('===================== AVERAGE DOWN RATA2 ======================')
 ##average down
 averageUp = averagePrice
@@ -290,6 +337,17 @@ averageUp = averageUp +(averageUp * 0.03)
 print('Avareage Up ', ':', round(averageUp, 2))
 
 print('')
+
+print('')
+print('===================== Price Earning Growth ======================')
+##average down
+peg = (float(pbvNow) * 10) / float(roe)
+print('PEG ', ':', round(peg, 2))
+print('')
+
+print('===================== Score ======================')
+print('Score', ':', round(score, 2), ' dari maksimal point 11')
+print('Score Blue Chip', ':', round(scoreBlueChip, 2), 'dari maksimal point 9')
 
 
 

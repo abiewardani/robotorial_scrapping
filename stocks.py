@@ -1,14 +1,15 @@
 from bs4 import BeautifulSoup
 from per import perCalculation, showHistoryTable
 from asset import assetCalculation
+from liabilitas import liabilitasCalculation
 import requests
 
-stockCode = 'pwon'
-quartal = 3
+stockCode = 'icbp'
+quartal = 4
 websiterUrl = requests.get(
     "https://www.indopremier.com/module/saham/include/fundamental.php?code="+stockCode+"&quarter="+str(quartal)).text
 print("https://www.indopremier.com/module/saham/include/fundamental.php?code="+stockCode+"&quarter="+str(quartal))
-soup = BeautifulSoup(websiterUrl, "html5lib")
+soup = BeautifulSoup(websiterUrl, "html.parser")
 
 table = []
 
@@ -65,10 +66,17 @@ while index < len(table):
     if table[index][0] == 'Total Asset':
         print('===================== Asset ========================')
         assetCalculation(table, dateKuartal, quartal, index)
+    if table[index][0] == 'S.T.Borrowing':
+        print('===================== Hutang Jangka Pendek ========================')
+        liabilitasCalculation(table, dateKuartal, quartal, index, 'short')
+    if table[index][0] == 'L.T.Borrowing':
+        print('===================== Hutang Jangka Panjang ========================')
+        liabilitasCalculation(table, dateKuartal, quartal, index, 'long')
     if table[index][0] == 'PER':
         print('===================== PER ========================')
         showHistoryTable(table, dateKuartal, quartal, index)
-        perArr, perNow, totalPer = perCalculation(table,dateKuartal,quartal, index)      
+        perArr, perNow, totalPer = perCalculation(table,dateKuartal,quartal, index)  
+        
     if table[index][0] == 'PBV':
         print('')
         print('===================== PBV ========================')

@@ -1,3 +1,5 @@
+from utils import cleansingValue 
+
 def assetCalculation(data, historyYear, quartal, index):
     assetNow = 0
     assetLastQuartal = 0
@@ -21,18 +23,5 @@ def assetCalculation(data, historyYear, quartal, index):
     if assetNow > assetLastQuartal:
         print('Total asset sd kuartal ' + str(quartal) + ' tahun ini adalah '+assetNowRaw+'. Terjadi peningkatan asset sebesar ' +
               str(round(marginAsset, 2))+' persen daripada kuartal ' + str(quartal) + ' tahun kemarin sebesar ' + assetLastQuartalRaw)
-    
-   
-    print('Margin Asset :', round(marginAsset, 2))
 
 
-def cleansingValue(valueAccount):
-    rest = 0
-    if valueAccount.find('T'):
-        val = valueAccount.replace('T', '')
-        rest = float(val) * 1000000000000
-    elif valueAccount.find('B'):
-        val = valueAccount.replace('B', '')
-        rest = float(val) * 1000000000
-
-    return rest

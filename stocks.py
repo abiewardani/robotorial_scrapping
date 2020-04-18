@@ -3,12 +3,12 @@ from per import perCalculation, showHistoryTable
 from asset import assetCalculation
 import requests
 
-stockCode = 'pwon'
-quartal = 3
+stockCode = 'jpfa'
+quartal = 4
 websiterUrl = requests.get(
     "https://www.indopremier.com/module/saham/include/fundamental.php?code="+stockCode+"&quarter="+str(quartal)).text
 print("https://www.indopremier.com/module/saham/include/fundamental.php?code="+stockCode+"&quarter="+str(quartal))
-soup = BeautifulSoup(websiterUrl, "html5lib")
+soup = BeautifulSoup(websiterUrl, "html.parser")
 
 table = []
 
@@ -67,7 +67,6 @@ while index < len(table):
         assetCalculation(table, dateKuartal, quartal, index)
     if table[index][0] == 'PER':
         print('===================== PER ========================')
-        showHistoryTable(table, dateKuartal, quartal, index)
         perArr, perNow, totalPer = perCalculation(table,dateKuartal,quartal, index)      
     if table[index][0] == 'PBV':
         print('')
@@ -229,16 +228,16 @@ print('DER:', der, statusDer)
 print('')
 print('===================== PRICE AVERAGE ======================')
 
-fairPriceByPER = epsNow * averagePer
-print('Harga Wajar By PER Average :', round(fairPriceByPER, 2))
+#fairPriceByPER = epsNow * averagePer
+#print('Harga Wajar By PER Average :', round(fairPriceByPER, 2))
 
 fairPriceByPBV = bvpsNow * averagePbv
 print('Harga Wajar By PBV Average :', round(fairPriceByPBV, 2))
-averagePrice = (fairPriceByPER + fairPriceByPBV)/2
+#averagePrice = (fairPriceByPER + fairPriceByPBV)/2
 
-print('Harga Wajar Average :', round(averagePrice, 2))
+#print('Harga Wajar Average :', round(averagePrice, 2))
 
-marginPrice = ((averagePrice - lastPrice)/averagePrice) * 100
+marginPrice = ((fairPriceByPBV - lastPrice)/fairPriceByPBV) * 100
 print('Margin Of Safety Average :', round(marginPrice, 2), '%')
 
 if float(marginPrice) > 15:
@@ -266,9 +265,9 @@ print('Harga Wajar By PBV Range:', round(fairPriceByPBVRange, 2))
 
 averagePriceRange = (fairPriceByPERRange + fairPriceByPBVRange)/2
 
-print('Harga Wajar Range :', round(averagePriceRange, 2))
+#print('Harga Wajar Range :', round(averagePriceRange, 2))
 marginPrice = ((averagePriceRange - lastPrice)/averagePriceRange) * 100
-print('Margin Of Safety Range :', round(marginPrice, 2), '%')
+#print('Margin Of Safety Range :', round(marginPrice, 2), '%')
 
 if float(marginPrice) > 15:
     score +=1
@@ -290,53 +289,43 @@ if marginPriceGraham > 15:
 print('')
 
 print('===================== PRICE RANGE ======================')
-print('Best Buy PER :', round(fairPriceByPERTerkecil, 2), ' PER terkecil 6 tahun terakhir')
+#print('Best Buy PER :', round(fairPriceByPERTerkecil, 2), ' PER terkecil 6 tahun terakhir')
 print('Best Buy PBV :', round(fairPriceByPBVTerkecil, 2), ' PVB terkecil 6 tahun terakhir')
 
-print('Best Sell PER :', round(fairPriceByPERTerbesar, 2),
-      ' PER terbesar 6 tahun terakhir')
-print('Best Sell PBV :', round(fairPriceByPBVTerbesar, 2),
-      ' PVB terbesar 6 tahun terakhir')
-
-print('')
-print('===================== AVERAGE DOWN RANGE ======================')
-
-##average down
-count = 1
-averageDownRange = averagePriceRange
-while (count < 6):     
-    averageDownRange = averageDownRange -(averageDownRange * 0.05) 
-    print('Avareage Down ',count, ':', round(averageDownRange, 2))
-    count = count + 1
+#print('Best Sell PER :', round(fairPriceByPERTerbesar, 2),' PER terbesar 6 tahun terakhir')
+print('Best Sell PBV :', round(fairPriceByPBVTerbesar, 2),' PVB terbesar 6 tahun terakhir')
 
 print('')
 print('===================== AVERAGE DOWN RATA2 ======================')
 
 ##average down
 count = 1
-averageDown = averagePrice
+averageDown = fairPriceByPBV
 while (count < 6):     
-    averageDown = averageDown -(averageDown * 0.05) 
+    averageDown = averageDown -(averageDown * 0.10) 
     print('Avareage Down ',count, ':', round(averageDown, 2))
     count = count + 1
 
 print('')
-print('===================== AVERAGE UP RANGE ======================')
+print('===================== Harga Wajar Krisis ======================')
+
+##average down
+count = 1
+averageDown = fairPriceByPBV
+averageDown = averageDown - (averageDown * 0.30)
+while (count < 6):
+    averageDown = averageDown - (averageDown * 0.10)
+    print('Pembelian krisis ', count, ':', round(averageDown, 2))
+    count = count + 1
+
+print('')
+print('===================== AVERAGE UP  ======================')
 
 ##average UP
 averageUpRange = averagePriceRange
 averageUpRange = averageUpRange + (averageUpRange * 0.03) 
 print('Avareage Up ', ':', round(averageUpRange, 2))
 
-
-print('')
-print('===================== AVERAGE DOWN RATA2 ======================')
-##average down
-averageUp = averagePrice
-averageUp = averageUp +(averageUp * 0.03) 
-print('Avareage Up ', ':', round(averageUp, 2))
-
-print('')
 
 print('')
 print('===================== Price Earning Growth ======================')

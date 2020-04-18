@@ -9,7 +9,7 @@ def perCalculation(data, historyYear, quartal, index):
                     perNow = float(perInt)
                 totalPer = totalPer + float(perInt)
                 perArr.append(float(perInt))
-                print('<td>'+perInt+'<td>')
+              
         else:
             if i > 1:
                 perInt = row.replace(' x', '')

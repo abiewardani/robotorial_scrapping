@@ -28,11 +28,14 @@ def assetCalculation(data, historyYear, quartal, index):
 
 def cleansingValue(valueAccount):
     rest = 0
-    if valueAccount.find('T'):
+
+    if 'T' in valueAccount:
         val = valueAccount.replace('T', '')
         rest = float(val) * 1000000000000
-    elif valueAccount.find('B'):
+    
+    if 'B' in valueAccount:
         val = valueAccount.replace('B', '')
         rest = float(val) * 1000000000
 
+   
     return rest

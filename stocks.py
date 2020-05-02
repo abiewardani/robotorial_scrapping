@@ -1,10 +1,16 @@
 from bs4 import BeautifulSoup
 from per import perCalculation, showHistoryTable
 from asset import assetCalculation
+from equity import equityCalculation
+from calculation import accountCalculation
+from money_management import moneyManagement
 import requests
 
-stockCode = 'jpfa'
+stockCode = 'sido'
 quartal = 4
+totalStock = 5
+totalMoney = 10000000
+
 websiterUrl = requests.get(
     "https://www.indopremier.com/module/saham/include/fundamental.php?code="+stockCode+"&quarter="+str(quartal)).text
 print("https://www.indopremier.com/module/saham/include/fundamental.php?code="+stockCode+"&quarter="+str(quartal))
@@ -57,14 +63,31 @@ scoreBlueChip = 0
 
 dateKuartal = []
 
-
+print('Stock Code:', stockCode)
+print('')
 
 while index < len(table):
     if table[index][0] == 'akun':
         dateKuartal = table[index]
     if table[index][0] == 'Total Asset':
-        print('===================== Asset ========================')
+        print('===================== Balance Sheet ========================')
         assetCalculation(table, dateKuartal, quartal, index)
+    if table[index][0] == 'Total Equity':
+        equityCalculation(table, dateKuartal, quartal, index)
+        print('')
+    if table[index][0] == 'S.T.Borrowing':
+        accountCalculation(table, dateKuartal, quartal, index, 'Hutang Jangka Pendek')
+    if table[index][0] == 'L.T.Borrowing':
+        accountCalculation(table, dateKuartal, quartal, index, 'Hutang Jangka Panjang')
+    if table[index][0] == 'Revenue':
+        print('===================== Income Statement ========================')
+        accountCalculation(table, dateKuartal, quartal, index, 'Pendapatan')
+    if table[index][0] == 'Operating Profit':
+        accountCalculation(table, dateKuartal, quartal, index, 'Pendapatan Operasional')
+    if table[index][0] == 'Net.Profit':
+        accountCalculation(table, dateKuartal, quartal,
+                           index, 'Net.Profit')
+        print('')
     if table[index][0] == 'PER':
         print('===================== PER ========================')
         perArr, perNow, totalPer = perCalculation(table,dateKuartal,quartal, index)      
@@ -178,14 +201,10 @@ while index < len(table):
                     roeArr.append(float(roeStr))
 
             averageRoe = totalRoe/(len(table[index])-2)
-            #marginPer = ((averagePer - perNow)/averagePer) * 100
-
 
     index += 1
 print('')
 print('===================== Info ======================')
-
-print('Stock Code:', stockCode)
 print('Harga Saat ini :', round(lastPrice, 2))
 print('ROE :', roe)
 print('Average Roe:', round(averageRoe,2))
@@ -202,40 +221,16 @@ statusDer = ''
 if der > 1:
     statusDer = ' Hutang diatas rata rata'
 else:
-    scoreBlueChip +=1
-    score +=1
     statusDer = ' Hutang dibawah rata rata'
 
-if float(roe) > 10:
-    score +=1
-    scoreBlueChip +=1
-
-if float(averageRoe) > 10:
-    score +=1
-    scoreBlueChip +=1
-
-if float(perNow) < 15:
-    score +=1
-
-if float(pbvNow) < 1:
-    score +=1
-
-if float(pbvNow) < 2.2:
-    scoreBlueChip += 1
 
 print('DER:', der, statusDer)
 
 print('')
 print('===================== PRICE AVERAGE ======================')
 
-#fairPriceByPER = epsNow * averagePer
-#print('Harga Wajar By PER Average :', round(fairPriceByPER, 2))
-
 fairPriceByPBV = bvpsNow * averagePbv
 print('Harga Wajar By PBV Average :', round(fairPriceByPBV, 2))
-#averagePrice = (fairPriceByPER + fairPriceByPBV)/2
-
-#print('Harga Wajar Average :', round(averagePrice, 2))
 
 marginPrice = ((fairPriceByPBV - lastPrice)/fairPriceByPBV) * 100
 print('Margin Of Safety Average :', round(marginPrice, 2), '%')
@@ -254,7 +249,6 @@ fairPriceByPERTerkecil = epsNow * float(perArr[0])
 fairPriceByPERTerbesar = epsNow * float(perArr[len(perArr)-1])
 
 fairPriceByPERRange = (fairPriceByPERTerkecil + fairPriceByPERTerbesar) / 2
-print('Harga Wajar By PER Range:', round(fairPriceByPERRange, 2))
 
 #Teori baca saham
 fairPriceByPBVTerkecil = bvpsNow * float(pbvArr[0])
@@ -264,38 +258,26 @@ fairPriceByPBVRange = (fairPriceByPBVTerkecil + fairPriceByPBVTerbesar) / 2
 print('Harga Wajar By PBV Range:', round(fairPriceByPBVRange, 2))
 
 averagePriceRange = (fairPriceByPERRange + fairPriceByPBVRange)/2
-
-#print('Harga Wajar Range :', round(averagePriceRange, 2))
 marginPrice = ((averagePriceRange - lastPrice)/averagePriceRange) * 100
-#print('Margin Of Safety Range :', round(marginPrice, 2), '%')
 
 if float(marginPrice) > 15:
     score +=1
 
 print('')
-
-print('===================== Benjamin Graham Price ======================')
-##average down
-
-hargaWajarBenjamin = epsNow * (8.5 + ((2*10))) * ((5.25/100)/(7.5/100)) 
-print('Harga Wajar Graham ', ':', round(hargaWajarBenjamin, 2))
-marginPriceGraham = ((hargaWajarBenjamin - lastPrice)/hargaWajarBenjamin) * 100
-print('Margin Of Safety Range :', round(marginPriceGraham, 2), '%')
-
-if marginPriceGraham > 15:
-    scoreBlueChip += 1
-    score += 1
-
-print('')
-
-print('===================== PRICE RANGE ======================')
-#print('Best Buy PER :', round(fairPriceByPERTerkecil, 2), ' PER terkecil 6 tahun terakhir')
+print('===================== BEST BUY ======================')
 print('Best Buy PBV :', round(fairPriceByPBVTerkecil, 2), ' PVB terkecil 6 tahun terakhir')
-
-#print('Best Sell PER :', round(fairPriceByPERTerbesar, 2),' PER terbesar 6 tahun terakhir')
 print('Best Sell PBV :', round(fairPriceByPBVTerbesar, 2),' PVB terbesar 6 tahun terakhir')
 
 print('')
+print('===================== MONEY MANAGEMENT ======================')
+if fairPriceByPBV > lastPrice:
+    priceMoneyManagement = lastPrice
+else:
+    priceMoneyManagement = fairPriceByPBV
+
+moneyManagement(priceMoneyManagement, totalMoney, totalStock, lastPrice)
+print('')
+
 print('===================== AVERAGE DOWN RATA2 ======================')
 
 ##average down
@@ -325,20 +307,10 @@ print('===================== AVERAGE UP  ======================')
 averageUpRange = averagePriceRange
 averageUpRange = averageUpRange + (averageUpRange * 0.03) 
 print('Avareage Up ', ':', round(averageUpRange, 2))
-
-
 print('')
 print('===================== Price Earning Growth ======================')
 ##average down
 peg = (float(pbvNow) * 10) / float(roe)
 print('PEG ', ':', round(peg, 2))
 print('')
-
-print('===================== Score ======================')
-print('Score', ':', round(score, 2), ' dari maksimal point 11')
-print('Score Blue Chip', ':', round(scoreBlueChip, 2), 'dari maksimal point 9')
-
-
-
-
 

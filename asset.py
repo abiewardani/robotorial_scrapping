@@ -19,12 +19,16 @@ def assetCalculation(data, historyYear, quartal, index):
     
     marginAsset = ((assetNow - assetLastQuartal)/assetNow) * 100
     if assetNow > assetLastQuartal:
-        print('Total asset sd kuartal ' + str(quartal) + ' tahun ini adalah '+assetNowRaw+'. Terjadi peningkatan asset sebesar ' +
-              str(round(marginAsset, 2))+' persen daripada kuartal ' + str(quartal) + ' tahun kemarin sebesar ' + assetLastQuartalRaw)
-    
-   
-    print('Margin Asset :', round(marginAsset, 2))
-
+        print('Total asset sd kuartal ' + str(quartal) + ' tahun ini adalah '+assetNowRaw +'. '
+              'Asset Meningkat Sebesar ' +
+              str(round(marginAsset, 2))+' persen, yaitu  ' +
+              "{:,}".format(assetNow - assetLastQuartal))
+    else:   
+        print('Total asset sd kuartal ' + str(quartal) + ' tahun ini adalah '+assetNowRaw + '. '
+              'Asset Menurun Sebesar ' +
+              str(round(marginAsset, 2))+' persen, yaitu  ' +
+              "{:,}".format(assetNow - assetLastQuartal))
+  
 
 def cleansingValue(valueAccount):
     rest = 0
@@ -36,6 +40,10 @@ def cleansingValue(valueAccount):
     if 'B' in valueAccount:
         val = valueAccount.replace('B', '')
         rest = float(val) * 1000000000
+    
+    if 'M' in valueAccount:
+        val = valueAccount.replace('M', '')
+        rest = float(val) * 1000000
 
    
     return rest

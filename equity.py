@@ -27,7 +27,7 @@ def equityCalculation(data, historyYear, quartal, index):
               "{:,}".format(equityNow - equityLastQuartal))
     else:
         print('Total Equity sd kuartal ' + str(quartal) + ' tahun ini adalah '+equityNowRaw + '. '
-              'Equity Meningkat Sebesar ' +
+              'Equity Menurun Sebesar ' +
               str(round(marginAsset, 2))+' persen, yaitu  ' +
               "{:,}".format(equityNow - equityLastQuartal))
 

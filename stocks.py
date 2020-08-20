@@ -6,10 +6,10 @@ from calculation import accountCalculation
 from money_management import moneyManagement
 import requests
 
-stockCode = 'sido'
-quartal = 4
-totalStock = 5
-totalMoney = 10000000
+stockCode = 'pgas'
+quartal = 1
+totalStock = 1
+totalMoney = 2000000
 
 websiterUrl = requests.get(
     "https://www.indopremier.com/module/saham/include/fundamental.php?code="+stockCode+"&quarter="+str(quartal)).text
@@ -42,7 +42,6 @@ print(" ")
 
 #Define Account
 per = []
-
 index = 0
 pbvNow = 0
 epsNow = 0
@@ -170,13 +169,13 @@ while index < len(table):
         for i, row in enumerate(table[index]):
             if quartal > 3:
                 if i != 0 and i != 2:
-                    derInt = row.replace(',', '')
+                    derInt = row.replace('.', '')
                     if i == 1:
                         der = float(derInt)
             else:
                 if i > 1:
                     derInt = row.replace(',', '')
-                    if i == 1:
+                    if i == 2:
                         der = float(derInt)
     
     if table[index][0] == 'ROE':
@@ -266,7 +265,13 @@ if float(marginPrice) > 15:
 print('')
 print('===================== BEST BUY ======================')
 print('Best Buy PBV :', round(fairPriceByPBVTerkecil, 2), ' PVB terkecil 6 tahun terakhir')
-print('Best Sell PBV :', round(fairPriceByPBVTerbesar, 2),' PVB terbesar 6 tahun terakhir')
+
+print('')
+print('===================== Target Price ======================')
+print('TP Sell PBV :', round(fairPriceByPBVTerbesar, 2),' PVB terbesar 6 tahun terakhir')
+print('TP Sell PBV range:', round(fairPriceByPBVRange, 2))
+print('TP Sell PER range:', round(fairPriceByPERRange, 2))
+print('TP Sell PBV di Harga Wajar:', round(fairPriceByPBV, 2))
 
 print('')
 print('===================== MONEY MANAGEMENT ======================')

@@ -3,11 +3,14 @@ def moneyManagement(fairPriceByPBV, totalMoney, totalStock, lastPrice):
     print('Total Dana : ', round(amount, 2))
     print(' ')
 
+    totalBill = 0
+    totalAllLot = 0
+
     count = 1
     while (count < 4):
         print('Price ', count, ':', round(fairPriceByPBV, 2))
         if count == 1:
-            firstAmount = amount * (0.2)
+            firstAmount = amount * (0.4)
             totalLot = (firstAmount/fairPriceByPBV)/100
         if count == 2:
             secondAmount = amount * (0.3)
@@ -21,7 +24,17 @@ def moneyManagement(fairPriceByPBV, totalMoney, totalStock, lastPrice):
             print('====> (Signal Buy) <====')
         print('')
 
-        fairPriceByPBV = fairPriceByPBV - (fairPriceByPBV * 0.10)
-       
-        count = count + 1
+        totalAllLot = totalAllLot + totalLot
+        totalBill = totalBill + (fairPriceByPBV * totalLot)
 
+        fairPriceByPBV = fairPriceByPBV - (fairPriceByPBV * 0.08)
+        count = count + 1
+    
+    averagePrice = totalBill/totalAllLot
+    print('Average Price :', round(averagePrice, 2))
+
+    cutLoss = averagePrice - (averagePrice * 0.30)
+    print('Cut Loss :', round(cutLoss, 2))
+
+    targetPrice = averagePrice + (averagePrice * 0.15)
+    print('Target Price:', round(targetPrice, 2))
